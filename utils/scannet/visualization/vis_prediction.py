@@ -71,7 +71,3 @@ if __name__ == '__main__':
     camera_center = np.array([0, -3, 3])
     scene.visualize(centroid=camera_center, save_path=os.path.join(save_path, 'pred.png'))
     scene.visualize(centroid=camera_center, save_path=os.path.join(save_path, 'points.png'), only_points=True)
-
-
-
-

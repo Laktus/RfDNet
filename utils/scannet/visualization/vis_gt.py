@@ -290,10 +290,10 @@ if __name__ == '__main__':
         shapenet_model = os.path.join(ShapeNetv2_Watertight_Scaled_Simplified_path, box['shapenet_catid'], box['shapenet_id'] + '.off')
         assert os.path.exists(shapenet_model)
 
-        obj_model = os.path.join('./temp', box['shapenet_catid'], box['shapenet_id'] + '.obj')
+        obj_model = os.path.join('.temp', box['shapenet_catid'], box['shapenet_id'] + '.obj')
         if not os.path.exists(obj_model):
             if not os.path.exists(os.path.dirname(obj_model)):
-                os.mkdir(os.path.dirname(obj_model))
+                os.makedirs(os.path.dirname(obj_model))
             Mesh.from_off(shapenet_model).to_obj(obj_model)
         vtk_object = vtk.vtkOBJReader()
         vtk_object.SetFileName(obj_model)

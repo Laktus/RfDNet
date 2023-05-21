@@ -1,0 +1,5 @@
+# ninja log v5
+0	38358	1685970537932503371	/content/RfDNet/build/temp.linux-x86_64-3.6/pcdet/ops/iou3d_nms/src/iou3d_cpu.o	a36fcbf3fd383793
+0	39635	1685970539200594511	/content/RfDNet/build/temp.linux-x86_64-3.6/pcdet/ops/iou3d_nms/src/iou3d_nms.o	8bf4e31997fbdd71
+38365	46130	1685970545710062358	/content/RfDNet/build/temp.linux-x86_64-3.6/pcdet/ops/iou3d_nms/src/iou3d_nms_kernel.o	528823a5dce7d424
+0	52738	1685970552309536674	/content/RfDNet/build/temp.linux-x86_64-3.6/pcdet/ops/iou3d_nms/src/iou3d_nms_api.o	1834e2ab79e4d8a7

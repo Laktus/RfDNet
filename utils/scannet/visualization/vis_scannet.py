@@ -363,6 +363,7 @@ class Vis_Scannet(object):
 if __name__ == '__main__':
     scene_dirname = 'scene0001_00'
     gt_dirname = os.path.join(path_config.metadata_root, 'scans', scene_dirname)
+    print(gt_dirname)
     assert os.path.exists(gt_dirname)
 
     scene = Vis_Scannet(gt_dirname=gt_dirname)

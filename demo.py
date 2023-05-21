@@ -11,6 +11,7 @@ from utils import pc_util
 from models.iscnet.dataloader import collate_fn
 import torch
 from net_utils.ap_helper import parse_predictions
+from net_utils.ap_helper import parse_predictions_meta
 from net_utils.libs import flip_axis_to_depth, extract_pc_in_box3d, flip_axis_to_camera
 from net_utils.box_util import get_3d_box
 from torch import optim
@@ -21,8 +22,13 @@ from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
 from utils.scannet.visualization.vis_for_demo import Vis_base
 
 
+def random_pad(vec, pad_width, *_, **__):
+    vec[:pad_width[0]] = np.random.randint(0, 256, size=pad_width[0])
+    vec[vec.size-pad_width[1]:] = np.random.randint(0, 256, size=pad_width[1])
+
 def load_demo_data(cfg, device):
     point_cloud = trimesh.load(cfg.config['demo_path']).vertices
+
     use_color = cfg.config['data']['use_color_detection'] or cfg.config['data']['use_color_completion']
     MEAN_COLOR_RGB = np.array([121.87661, 109.73591, 95.61673])
     use_height = not cfg.config['data']['no_height']
@@ -31,6 +37,11 @@ def load_demo_data(cfg, device):
     if not use_color:
         point_cloud = point_cloud[:, 0:3]  # do not use color for now
     else:
+        if not point_cloud[:,3:]:
+          point_cloud = np.pad(point_cloud, ((0,0), (0,3)), mode=random_pad)
+        
+        print(point_cloud)
+
         point_cloud = point_cloud[:, 0:6]
         point_cloud[:, 3:] = (point_cloud[:, 3:] - MEAN_COLOR_RGB) / 256.0
 
@@ -39,6 +50,8 @@ def load_demo_data(cfg, device):
         height = point_cloud[:, 2] - floor_height
         point_cloud = np.concatenate([point_cloud, np.expand_dims(height, 1)], 1)
 
+    # CAGroup3D requires a bs_id that we don't have here. We always assume bs_id = 0
+    point_cloud = np.pad(point_cloud, ((0,0),(1,0)), mode='constant')
     point_cloud, choices = pc_util.random_sampling(point_cloud, num_points, return_choices=True)
     data = collate_fn([{'point_clouds': point_cloud.astype(np.float32)}])
 
@@ -203,24 +216,27 @@ def generate(cfg, net, data, post_processing):
         mode = cfg.config['mode']
         inputs = {'point_clouds': data['point_clouds']}
         end_points = {}
-        end_points = net.backbone(inputs['point_clouds'], end_points)
-        # --------- HOUGH VOTING ---------
-        xyz = end_points['fp2_xyz']
-        features = end_points['fp2_features']
-        end_points['seed_inds'] = end_points['fp2_inds']
-        end_points['seed_xyz'] = xyz
-        end_points['seed_features'] = features
+        
+        batch_dict = {
+          'points': data['point_clouds'][0],
+          'cur_epoch': 240,
+          'batch_size': 1
+        }
 
-        xyz, features = net.voting(xyz, features)
-        features_norm = torch.norm(features, p=2, dim=1)
-        features = features.div(features_norm.unsqueeze(1))
-        end_points['vote_xyz'] = xyz
-        end_points['vote_features'] = features
-        # --------- DETECTION ---------
-        if_proposal_feature = cfg.config[mode]['phase'] == 'completion'
-        end_points, proposal_features = net.detection(xyz, features, end_points, if_proposal_feature)
+        print("POINT_CLOUDS")
+        print(data['point_clouds'].shape)
 
-        eval_dict, parsed_predictions = parse_predictions(end_points, data, cfg.eval_config)
+        end_points = net.detection(batch_dict)
+
+        print("END_POINTS")
+
+        print("END_POINTS_0")
+        print(end_points[0])
+        
+        print("END_POINTS_1")
+        print(end_points[1])
+
+        eval_dict, parsed_predictions = parse_predictions_meta(end_points, data, cfg.eval_config)
 
         '''For Completion'''
         # use 3D NMS to generate sample ids.

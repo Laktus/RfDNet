@@ -29,15 +29,49 @@ data:
   use_cls_for_completion: False
   skip_propagate: True
 model:
-  backbone:
-    method: Pointnet2Backbone
-    loss: Null
-  voting:
-    method: VotingModule
-    loss: Null
   detection:
-    method: ProposalModule
-    loss: DetectionLoss
+    method: CAGroup3D
+    voxel_size: 0.02
+    semantic_min_thr: 0.05
+    semantic_iter_value: 0.02
+    semantic_thr: 0.15
+
+    backbone:
+      in_channels: 3
+      out_channels: 64
+    dense:
+      in_channels: [64, 128, 256,512]
+      out_channels: 64
+      semantic_thr: 0.15
+      voxel_size: 0.02
+      n_classes: 18
+      n_reg_outs: 6
+      cls_kernel: 9
+      with_yaw: False
+      use_sem_score: False
+      expand_ratio: 3
+    roi:
+      num_classes: 18
+      middle_feature_source: [3]
+      grid_size: 7
+      voxel_size: 0.02
+      coord_key: 2
+      mlps: [[64,128,128]]
+      code_size: 6
+      encode_sincos: False
+      roi_per_image: 128
+      roi_fg_ratio: 0.9
+      reg_fg_thresh: 0.3
+      roi_conv_kernel: 5
+      enlarge_ratio: False
+      use_iou_loss: False 
+      use_grid_offset: False
+      use_simple_pooling: True
+      use_center_pooling: True
+    post_processing:
+      recall_thresh_list: [0.25,0.5]
+      eval_metric: scannet    
+    loss: Null
   skip_propagation:
     method: SkipPropagation
     loss: Null

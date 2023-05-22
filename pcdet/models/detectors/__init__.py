@@ -1,5 +1,5 @@
 from .detector3d_template import Detector3DTemplate
-from .cagroup3d import CAGroup3D
+from ....iscnet.modules.cagroup3d import CAGroup3D
 
 __all__ = {
     'Detector3DTemplate': Detector3DTemplate,

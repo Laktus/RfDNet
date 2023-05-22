@@ -1,5 +1,4 @@
-from .detector3d_template import Detector3DTemplate
-# from pcdet.models.detectors.detector3d_template import Detector3DTemplate
+from ....pcdet.models.detectors.detector3d_template import Detector3DTemplate
 import torch
 import MinkowskiEngine as ME
 from models.registers import MODULES

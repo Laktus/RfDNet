@@ -1,13 +1,21 @@
-from ....pcdet.models.detectors.detector3d_template import Detector3DTemplate
 import torch
 import MinkowskiEngine as ME
 from models.registers import MODULES
 
-@MODULES.register_module
-class CAGroup3D(Detector3DTemplate):
-    def __init__(self, model_cfg, num_class, dataset):
-        super().__init__(model_cfg=model_cfg, num_class=num_class, dataset=dataset)
-        self.module_list = self.build_networks()
+from pcdet.models.backbones_3d import BiResNet
+from pcdet.models.dense_heads import CAGroup3DHead
+from pcdet.models.roi_heads import CAGroup3DRoIHead
+
+class CAGroup3D(nn.Module):
+    def __init__(self, model_cfg):
+        super(CAGroup3D, self).__init__()
+        backbone_3d = build_backbone_3d()
+        self.add_module(backbone_3d)
+        dense_head = build_dense_head()
+        self.add_module(dense_head)
+        roi_head = build_roi_head()
+        self.add_module(roi_head)
+
         # set hparams
         self.voxel_size = self.cfg.config['model']['detection']['voxel_size']
         self.semantic_min_threshold = self.cfg.config['model']['detection']['semantic_min_thr']
@@ -22,7 +30,22 @@ class CAGroup3D(Detector3DTemplate):
         features = points[:, 4:].clone()
         sp_tensor = ME.SparseTensor(coordinates=coordinates, features=features)
         return sp_tensor
+    
+    def build_backbone_3d(self):
+        return BiResNet(
+            model_cfg=self.model_cfg['model']['detection']['backbone'],
+        )
+    
+    def build_dense_head(self):
+        return CAGroup3DHead(
+            model_cfg=self.model_cfg['model']['detection']['dense'],
+        )
 
+    def build_roi_head(self):
+        return CAGroup3DRoIHead(
+            model_cfg=self.model_cfg['model']['detection']['roi'],
+        )
+    
     def forward(self, batch_dict):
         # adjust semantic value
         cur_epoch = batch_dict.get('cur_epoch', None)
@@ -33,7 +56,7 @@ class CAGroup3D(Detector3DTemplate):
         sp_tensor = self.voxelization(batch_dict['points'])
         batch_dict['sp_tensor'] = sp_tensor
         
-        for cur_module in self.module_list:
+        for cur_module in self.children():
             results = cur_module(batch_dict)
             batch_dict.update(results)
 

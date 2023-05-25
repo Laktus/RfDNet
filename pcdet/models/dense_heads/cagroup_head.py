@@ -20,23 +20,23 @@ class CAGroup3DHead(nn.Module):
                  **kwargs,
                  ):
         super(CAGroup3DHead, self).__init__()
-        n_classes = cfg.config['n_classes']
-        in_channels = cfg.config['in_channels']
-        out_channels = cfg.config['out_channels']
-        n_reg_outs = cfg.config['n_reg_outs']
-        voxel_size = cfg.config['voxel_size']
-        semantic_threshold = cfg.config['semantic_thr']
-        expand_ratio = cfg.config['expand_ratio']
-        assigner = cfg.config['assigner']
-        with_yaw = cfg.config['with_yaw']
-        use_sem_score = cfg.config['use_sem_score']
-        cls_kernel = cfg.config['cls_kernel']
-        loss_centerness = cfg.config['loss_centerness']
-        loss_bbox = cfg.config['loss_bbox']
-        loss_cls = cfg.config['loss_cls']
-        loss_sem = cfg.config['loss_sem']
-        loss_offset = cfg.config['loss_offset']
-        nms_config = cfg.config['nms_config']
+        n_classes = cfg['n_classes']
+        in_channels = cfg['in_channels']
+        out_channels = cfg['out_channels']
+        n_reg_outs = cfg['n_reg_outs']
+        voxel_size = cfg['voxel_size']
+        semantic_threshold = cfg['semantic_thr']
+        expand_ratio = cfg['expand_ratio']
+        assigner = cfg.get('assigner', None)
+        with_yaw = cfg['with_yaw']
+        use_sem_score = cfg['use_sem_score']
+        cls_kernel = cfg['cls_kernel']
+        loss_centerness = cfg.get('loss_centerness', None)
+        loss_bbox = cfg.get('loss_bbox', None)
+        loss_cls = cfg.get('loss_cls', None)
+        loss_sem = cfg.get('loss_sem', None)
+        loss_offset = cfg.get('loss_offset', None)
+        nms_config = cfg.get('nms_config', None)
         self.voxel_size = voxel_size
         self.yaw_parametrization = yaw_parametrization
         self.cls_kernel = cls_kernel

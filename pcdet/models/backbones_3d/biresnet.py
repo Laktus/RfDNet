@@ -201,8 +201,8 @@ class BiResNet(nn.Module):
                  block=BasicBlock,
                  **kwargs):
         super(BiResNet, self).__init__()
-        in_channels = cfg.config['in_channels']
-        out_channels = cfg.config['out_channels']
+        in_channels = cfg['in_channels']
+        out_channels = cfg['out_channels']
         layers = [2, 2, 2, 2]
         planes = 64
         spp_planes = 128

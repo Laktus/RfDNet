@@ -16,8 +16,8 @@ data:
   cluster_sampling: seed_fps
   ap_iou_thresh: 0.25
   no_height: False
-  use_color_detection: False
-  use_color_completion: False
+  use_color_detection: True
+  use_color_completion: True
   shapenet_path: datasets/ShapeNetv2_data
   points_unpackbits: True
   points_subsample: [1024, 1024]

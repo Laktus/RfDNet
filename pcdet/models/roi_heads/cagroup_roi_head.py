@@ -97,32 +97,32 @@ class SimplePoolingLayer(nn.Module):
 class CAGroup3DRoIHead(nn.Module):
     def __init__(self, cfg, cls_loss_type='BinaryCrossEntropy', reg_loss_type='smooth-l1', **kwargs):
         super(CAGroup3DRoIHead, self).__init__()
-        middle_feature_source = cfg.config['middle_feature_source']
-        num_class = cfg.config['num_classes']
-        code_size = cfg.config['code_size']
-        grid_size = cfg.config['grid_size']
-        voxel_size = cfg.config['voxel_size']
-        coord_key = cfg.config['coord_key']
-        mlps = cfg.config['mlps']
-        enlarge_ratio = cfg.config['enlarge_ratio']
+        middle_feature_source = cfg['middle_feature_source']
+        num_class = cfg['num_classes']
+        code_size = cfg['code_size']
+        grid_size = cfg['grid_size']
+        voxel_size = cfg['voxel_size']
+        coord_key = cfg['coord_key']
+        mlps = cfg['mlps']
+        enlarge_ratio = cfg['enlarge_ratio']
         shared_fc = [256,256]
         cls_fc = [256,256]
         reg_fc = [256,256]
         dp_ratio = 0.3
         test_score_thr = 0.01
         test_iou_thr = 0.5
-        roi_per_image = cfg.config['roi_per_image']
-        roi_fg_ratio = cfg.config['roi_fg_ratio']
-        reg_fg_thresh = cfg.config['reg_fg_thresh']
-        roi_conv_kernel = cfg.config['roi_conv_kernel']
+        roi_per_image = cfg['roi_per_image']
+        roi_fg_ratio = cfg['roi_fg_ratio']
+        reg_fg_thresh = cfg['reg_fg_thresh']
+        roi_conv_kernel = cfg['roi_conv_kernel']
         encode_angle_by_sincos = False
-        use_iou_loss = cfg.config['use_iou_loss']
-        use_grid_offset = cfg.config['use_grid_offset']
+        use_iou_loss = cfg.get('use_iou_loss', None)
+        use_grid_offset = cfg['use_grid_offset']
         # pooling config
-        use_simple_pooling = cfg.config['use_simple_pooling']
-        use_center_pooling = cfg.config['use_center_pooling']
+        use_simple_pooling = cfg['use_simple_pooling']
+        use_center_pooling = cfg['use_center_pooling']
         # We want to ignore losses for now
-        loss_weight = cfg.config['loss_weights']
+        loss_weight = cfg.get('loss_weights', None)
 
         self.middle_feature_source = middle_feature_source # default [3] : only use semantic feature from backbone3d
         self.num_class = num_class

@@ -9,5 +9,5 @@ class CAGroup3DWrapper(nn.Module):
         super(CAGroup3DWrapper, self).__init__()
         self.cagroup = CAGroup3D(cfg)
     
-    def forward(self, pointcloud: torch.cuda.FloatTensor, end_points=None):
-        return self.cagroup({})
+    def forward(self, batch_dict):
+        return self.cagroup(batch_dict)

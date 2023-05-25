@@ -23,6 +23,7 @@ from utils.scannet.visualization.vis_for_demo import Vis_base
 
 def load_demo_data(cfg, device):
     point_cloud = trimesh.load(cfg.config['demo_path']).vertices
+
     use_color = cfg.config['data']['use_color_detection'] or cfg.config['data']['use_color_completion']
     MEAN_COLOR_RGB = np.array([121.87661, 109.73591, 95.61673])
     use_height = not cfg.config['data']['no_height']
@@ -203,22 +204,14 @@ def generate(cfg, net, data, post_processing):
         mode = cfg.config['mode']
         inputs = {'point_clouds': data['point_clouds']}
         end_points = {}
-        end_points = net.backbone(inputs['point_clouds'], end_points)
-        # --------- HOUGH VOTING ---------
-        xyz = end_points['fp2_xyz']
-        features = end_points['fp2_features']
-        end_points['seed_inds'] = end_points['fp2_inds']
-        end_points['seed_xyz'] = xyz
-        end_points['seed_features'] = features
+        
+        batch_dict = {
+          'points': data['point_clouds'],
+          'cur_epoch': 240,
+          'batch_size': 8
+        }
 
-        xyz, features = net.voting(xyz, features)
-        features_norm = torch.norm(features, p=2, dim=1)
-        features = features.div(features_norm.unsqueeze(1))
-        end_points['vote_xyz'] = xyz
-        end_points['vote_features'] = features
-        # --------- DETECTION ---------
-        if_proposal_feature = cfg.config[mode]['phase'] == 'completion'
-        end_points, proposal_features = net.detection(xyz, features, end_points, if_proposal_feature)
+        result = net.detection(batch_dict)
 
         eval_dict, parsed_predictions = parse_predictions(end_points, data, cfg.eval_config)
 

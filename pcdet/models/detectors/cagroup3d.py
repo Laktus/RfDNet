@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import MinkowskiEngine as ME
 from models.registers import MODULES
 
@@ -9,12 +10,13 @@ from pcdet.models.roi_heads import CAGroup3DRoIHead
 class CAGroup3D(nn.Module):
     def __init__(self, model_cfg):
         super(CAGroup3D, self).__init__()
-        backbone_3d = build_backbone_3d()
-        self.add_module(backbone_3d)
-        dense_head = build_dense_head()
-        self.add_module(dense_head)
-        roi_head = build_roi_head()
-        self.add_module(roi_head)
+        self.cfg = model_cfg
+        self.backbone_3d = self.build_backbone_3d()
+        self.add_module("backbone_3d", self.backbone_3d)
+        self.dense_head = self.build_dense_head()
+        self.add_module("dense_head", self.dense_head)
+        self.roi_head = self.build_roi_head()
+        self.add_module("roi_head", self.roi_head)
 
         # set hparams
         self.voxel_size = self.cfg.config['model']['detection']['voxel_size']
@@ -33,26 +35,28 @@ class CAGroup3D(nn.Module):
     
     def build_backbone_3d(self):
         return BiResNet(
-            model_cfg=self.model_cfg['model']['detection']['backbone'],
+            cfg=self.cfg.config['model']['detection']['backbone'],
         )
     
     def build_dense_head(self):
         return CAGroup3DHead(
-            model_cfg=self.model_cfg['model']['detection']['dense'],
+            cfg=self.cfg.config['model']['detection']['dense'],
         )
 
     def build_roi_head(self):
         return CAGroup3DRoIHead(
-            model_cfg=self.model_cfg['model']['detection']['roi'],
+            cfg=self.cfg.config['model']['detection']['roi'],
         )
     
     def forward(self, batch_dict):
         # adjust semantic value
         cur_epoch = batch_dict.get('cur_epoch', None)
         assert cur_epoch is not None
-        self.module_list[1].semantic_threshold = max(self.semantic_value - int(cur_epoch) * self.semantic_iter_value, self.semantic_min_threshold)
+        self.dense_head.semantic_threshold = max(self.semantic_value - int(cur_epoch) * self.semantic_iter_value, self.semantic_min_threshold)
         # normalize point features
+        print(batch_dict['points'])
         batch_dict['points'][:, -3:] = batch_dict['points'][:, -3:] / 255.
+        print(batch_dict['points'])
         sp_tensor = self.voxelization(batch_dict['points'])
         batch_dict['sp_tensor'] = sp_tensor
         
@@ -65,7 +69,7 @@ class CAGroup3D(nn.Module):
             ret_dict = {
                 'loss': loss
             }
-            disp_dict['cur_semantic_value'] = self.module_list[1].semantic_threshold
+            disp_dict['cur_semantic_value'] = self.dense_head.semantic_threshold
             return ret_dict, tb_dict, disp_dict
         else:
             pred_dicts, recall_dicts = self.post_processing(batch_dict)

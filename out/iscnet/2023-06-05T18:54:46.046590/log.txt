@@ -1,0 +1,925 @@
+2023-06-05 18:54:52,771 - demo - INFO - Loading configurations.
+2023-06-05 18:54:52,771 - demo - INFO - {'method': 'ISCNet', 'resume': False, 'finetune': False, 'weight': ['out/pretrained_models/pretrained_weight.pth'], 'seed': 10, 'device': {'use_gpu': True, 'gpu_ids': '0', 'num_workers': 0}, 'data': {'dataset': 'scannet', 'split': 'datasets/splits/fullscan', 'num_point': 80000, 'num_target': 256, 'vote_factor': 1, 'cluster_sampling': 'seed_fps', 'ap_iou_thresh': 0.25, 'no_height': True, 'use_color_detection': True, 'use_color_completion': True, 'shapenet_path': 'datasets/ShapeNetv2_data', 'points_unpackbits': True, 'points_subsample': [1024, 1024], 'hidden_dim': 512, 'c_dim': 512, 'z_dim': 32, 'threshold': 0.5, 'completion_limit_in_train': 10, 'use_cls_for_completion': False, 'skip_propagate': True}, 'model': {'detection': {'method': 'CAGroup3DWrapper', 'voxel_size': 0.02, 'semantic_min_thr': 0.05, 'semantic_iter_value': 0.02, 'semantic_thr': 0.15, 'backbone': {'in_channels': 3, 'out_channels': 64}, 'dense': {'in_channels': [64, 128, 256, 512], 'out_channels': 64, 'semantic_thr': 0.15, 'voxel_size': 0.02, 'n_classes': 18, 'n_reg_outs': 6, 'cls_kernel': 9, 'with_yaw': False, 'use_sem_score': False, 'expand_ratio': 3}, 'roi': {'num_classes': 18, 'middle_feature_source': [3], 'grid_size': 7, 'voxel_size': 0.02, 'coord_key': 2, 'mlps': [[64, 128, 128]], 'code_size': 6, 'encode_sincos': False, 'roi_per_image': 128, 'roi_fg_ratio': 0.9, 'reg_fg_thresh': 0.3, 'roi_conv_kernel': 5, 'enlarge_ratio': False, 'use_iou_loss': False, 'use_grid_offset': False, 'use_simple_pooling': True, 'use_center_pooling': True}, 'post_processing': {'recall_thresh_list': [0.25, 0.5], 'eval_metric': 'scannet'}, 'loss': None}, 'skip_propagation': {'method': 'SkipPropagation', 'loss': None}, 'completion': {'method': 'ONet', 'loss': 'ONet_Loss', 'weight': 0.005}}, 'test': {'phase': 'completion', 'batch_size': 1, 'use_cls_nms': True, 'use_3d_nms': True, 'ap_iou_thresholds': [0.5], 'faster_eval': False, 'nms_iou': 0.25, 'use_old_type_nms': False, 'per_class_proposal': True, 'conf_thresh': 0.05, 'evaluate_mesh_mAP': False}, 'generation': {'generate_mesh': True, 'resolution_0': 32, 'upsampling_steps': 0, 'use_sampling': False, 'refinement_step': 0, 'simplify_nfaces': None, 'dump_threshold': 0.5, 'dump_results': True}, 'demo': {'phase': 'completion'}, 'log': {'vis_path': 'out/iscnet/2023-06-05T18:54:46.046590/visualization', 'save_results': True, 'vis_step': 100, 'print_step': 10, 'path': 'out/iscnet/2023-06-05T18:54:46.046590'}, 'config': 'configs/config_files/ISCNet_test.yaml', 'mode': 'demo', 'demo_path': 'demo/inputs/scene0549_00.off'}
+2023-06-05 18:54:53,805 - demo - INFO - Data save path: out/iscnet/2023-06-05T18:54:46.046590
+2023-06-05 18:54:53,805 - demo - INFO - Loading device settings.
+2023-06-05 18:54:53,805 - demo - INFO - GPU mode is on.
+2023-06-05 18:54:53,805 - demo - INFO - GPU Ids: 0 used.
+2023-06-05 18:54:53,806 - demo - INFO - Loading model.
+2023-06-05 18:54:58,384 - demo - INFO - DataParallel(
+  (module): ISCNet(
+    (detection): CAGroup3DWrapper(
+      (cagroup): CAGroup3D(
+        (backbone_3d): BiResNet(
+          (conv1): Sequential(
+            (0): MinkowskiConvolution(in=3, out=64, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+            (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (2): MinkowskiReLU()
+            (3): MinkowskiConvolution(in=64, out=64, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+            (4): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (5): MinkowskiReLU()
+          )
+          (relu): MinkowskiReLU()
+          (layer1): Sequential(
+            (0): BasicBlock(
+              (conv1): MinkowskiConvolution(in=64, out=64, kernel_size=[3, 3, 3], stride=[2, 2, 2], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=64, out=64, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+              (downsample): Sequential(
+                (0): MinkowskiConvolution(in=64, out=64, kernel_size=[1, 1, 1], stride=[2, 2, 2], dilation=[1, 1, 1])
+                (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+            (1): BasicBlock(
+              (conv1): MinkowskiConvolution(in=64, out=64, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=64, out=64, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+            )
+          )
+          (layer2): Sequential(
+            (0): BasicBlock(
+              (conv1): MinkowskiConvolution(in=64, out=128, kernel_size=[3, 3, 3], stride=[2, 2, 2], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+              (downsample): Sequential(
+                (0): MinkowskiConvolution(in=64, out=128, kernel_size=[1, 1, 1], stride=[2, 2, 2], dilation=[1, 1, 1])
+                (1): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+            (1): BasicBlock(
+              (conv1): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+            )
+          )
+          (layer3): Sequential(
+            (0): BasicBlock(
+              (conv1): MinkowskiConvolution(in=128, out=256, kernel_size=[3, 3, 3], stride=[2, 2, 2], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=256, out=256, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+              (downsample): Sequential(
+                (0): MinkowskiConvolution(in=128, out=256, kernel_size=[1, 1, 1], stride=[2, 2, 2], dilation=[1, 1, 1])
+                (1): MinkowskiBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+            (1): BasicBlock(
+              (conv1): MinkowskiConvolution(in=256, out=256, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=256, out=256, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+            )
+          )
+          (layer4): Sequential(
+            (0): BasicBlock(
+              (conv1): MinkowskiConvolution(in=256, out=512, kernel_size=[3, 3, 3], stride=[2, 2, 2], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=512, out=512, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+              (downsample): Sequential(
+                (0): MinkowskiConvolution(in=256, out=512, kernel_size=[1, 1, 1], stride=[2, 2, 2], dilation=[1, 1, 1])
+                (1): MinkowskiBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+            (1): BasicBlock(
+              (conv1): MinkowskiConvolution(in=512, out=512, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=512, out=512, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+            )
+          )
+          (compression3): Sequential(
+            (0): MinkowskiConvolution(in=256, out=128, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            (1): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+          (compression4): Sequential(
+            (0): MinkowskiConvolution(in=512, out=128, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            (1): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+          (down3): Sequential(
+            (0): MinkowskiConvolution(in=128, out=256, kernel_size=[3, 3, 3], stride=[2, 2, 2], dilation=[1, 1, 1])
+            (1): MinkowskiBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+          (down4): Sequential(
+            (0): MinkowskiConvolution(in=128, out=256, kernel_size=[3, 3, 3], stride=[2, 2, 2], dilation=[1, 1, 1])
+            (1): MinkowskiBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (2): MinkowskiReLU()
+            (3): MinkowskiConvolution(in=256, out=512, kernel_size=[3, 3, 3], stride=[2, 2, 2], dilation=[1, 1, 1])
+            (4): MinkowskiBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+          (layer3_): Sequential(
+            (0): BasicBlock(
+              (conv1): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+            )
+            (1): BasicBlock(
+              (conv1): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+            )
+          )
+          (layer4_): Sequential(
+            (0): BasicBlock(
+              (conv1): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+            )
+            (1): BasicBlock(
+              (conv1): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+            )
+          )
+          (layer5_): Sequential(
+            (0): Bottleneck(
+              (conv1): MinkowskiConvolution(in=128, out=128, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv3): MinkowskiConvolution(in=128, out=256, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm3): MinkowskiBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+              (downsample): Sequential(
+                (0): MinkowskiConvolution(in=128, out=256, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+                (1): MinkowskiBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+          )
+          (layer5): Sequential(
+            (0): Bottleneck(
+              (conv1): MinkowskiConvolution(in=512, out=512, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm1): MinkowskiBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv2): MinkowskiConvolution(in=512, out=512, kernel_size=[3, 3, 3], stride=[2, 2, 2], dilation=[1, 1, 1])
+              (norm2): MinkowskiBatchNorm(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (conv3): MinkowskiConvolution(in=512, out=1024, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (norm3): MinkowskiBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): MinkowskiReLU()
+              (downsample): Sequential(
+                (0): MinkowskiConvolution(in=512, out=1024, kernel_size=[1, 1, 1], stride=[2, 2, 2], dilation=[1, 1, 1])
+                (1): MinkowskiBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+          )
+          (spp): DAPPM(
+            (scale1): Sequential(
+              (0): MinkowskiAvgPooling(kernel_size=[5, 5, 5], stride=[2, 2, 2], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiReLU()
+              (3): MinkowskiConvolution(in=1024, out=128, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+            (scale2): Sequential(
+              (0): MinkowskiAvgPooling(kernel_size=[9, 9, 9], stride=[4, 4, 4], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiReLU()
+              (3): MinkowskiConvolution(in=1024, out=128, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+            (scale3): Sequential(
+              (0): MinkowskiAvgPooling(kernel_size=[17, 17, 17], stride=[8, 8, 8], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiReLU()
+              (3): MinkowskiConvolution(in=1024, out=128, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+            (scale4): Sequential(
+              (0): MinkowskiAvgPooling(kernel_size=[33, 33, 33], stride=[16, 16, 16], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiReLU()
+              (3): MinkowskiConvolution(in=1024, out=128, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+            (scale0): Sequential(
+              (0): MinkowskiBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (1): MinkowskiReLU()
+              (2): MinkowskiConvolution(in=1024, out=128, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+            (process1): Sequential(
+              (0): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (1): MinkowskiReLU()
+              (2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+            (process2): Sequential(
+              (0): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (1): MinkowskiReLU()
+              (2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+            (process3): Sequential(
+              (0): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (1): MinkowskiReLU()
+              (2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+            (process4): Sequential(
+              (0): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (1): MinkowskiReLU()
+              (2): MinkowskiConvolution(in=128, out=128, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+            (compression): Sequential(
+              (0): MinkowskiBatchNorm(640, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (1): MinkowskiReLU()
+              (2): MinkowskiConvolution(in=640, out=256, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+            (shortcut): Sequential(
+              (0): MinkowskiBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (1): MinkowskiReLU()
+              (2): MinkowskiConvolution(in=1024, out=256, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            )
+          )
+          (out): Sequential(
+            (0): MinkowskiConvolutionTranspose(in=256, out=256, kernel_size=[2, 2, 2], stride=[2, 2, 2], dilation=[1, 1, 1])
+            (1): MinkowskiBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (2): MinkowskiReLU()
+            (3): MinkowskiConvolution(in=256, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            (4): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (5): MinkowskiReLU()
+          )
+        )
+        (dense_head): CAGroup3DHead(
+          (offset_block): Sequential(
+            (0): MinkowskiConvolution(in=64, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (2): MinkowskiELU()
+            (3): MinkowskiConvolution(in=64, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+            (4): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (5): MinkowskiELU()
+            (6): MinkowskiConvolution(in=64, out=3, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+          )
+          (feature_offset): Sequential(
+            (0): MinkowskiConvolution(in=64, out=64, kernel_size=[3, 3, 3], stride=[1, 1, 1], dilation=[1, 1, 1])
+            (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (2): MinkowskiELU()
+          )
+          (semantic_conv): MinkowskiConvolution(in=64, out=18, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+          (centerness_conv): MinkowskiConvolution(in=64, out=1, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+          (reg_conv): MinkowskiConvolution(in=64, out=6, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+          (cls_conv): MinkowskiConvolution(in=64, out=18, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+          (scales): ModuleList(
+            (0): Scale()
+            (1): Scale()
+            (2): Scale()
+            (3): Scale()
+            (4): Scale()
+            (5): Scale()
+            (6): Scale()
+            (7): Scale()
+            (8): Scale()
+            (9): Scale()
+            (10): Scale()
+            (11): Scale()
+            (12): Scale()
+            (13): Scale()
+            (14): Scale()
+            (15): Scale()
+            (16): Scale()
+            (17): Scale()
+          )
+          (cls_individual_out): ModuleList(
+            (0): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (1): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (2): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (3): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (4): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (5): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (6): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (7): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (8): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (9): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (10): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (11): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (12): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (13): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (14): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (15): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (16): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (17): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[9, 9, 9], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+          )
+          (cls_individual_up): ModuleList(
+            (0): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (1): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (2): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (3): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (4): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (5): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (6): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (7): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (8): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (9): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (10): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (11): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (12): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (13): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (14): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (15): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (16): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+            (17): ModuleList(
+              (0): MinkowskiGenerativeConvolutionTranspose(in=64, out=64, kernel_size=[3, 3, 3], stride=[3, 3, 3], dilation=[1, 1, 1])
+              (1): Sequential(
+                (0): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+                (1): MinkowskiELU()
+              )
+            )
+          )
+          (cls_individual_fuse): ModuleList(
+            (0): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (1): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (2): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (3): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (4): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (5): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (6): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (7): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (8): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (9): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (10): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (11): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (12): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (13): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (14): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (15): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (16): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (17): Sequential(
+              (0): MinkowskiConvolution(in=128, out=64, kernel_size=[1, 1, 1], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+          )
+          (cls_individual_expand_out): ModuleList(
+            (0): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (1): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (2): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (3): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (4): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (5): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (6): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (7): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (8): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (9): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (10): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (11): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (12): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (13): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (14): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (15): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (16): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+            (17): Sequential(
+              (0): MinkowskiConvolution(in=64, out=64, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (1): MinkowskiBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): MinkowskiELU()
+            )
+          )
+        )
+        (roi_head): CAGroup3DRoIHead(
+          (proposal_target_layer): ProposalTargetLayer()
+          (roi_grid_pool_layers): ModuleList(
+            (0): SimplePoolingLayer(
+              (grid_conv): MinkowskiConvolution(in=64, out=128, kernel_size=[5, 5, 5], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (grid_bn): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (grid_relu): MinkowskiELU()
+              (pooling_conv): MinkowskiConvolution(in=128, out=128, kernel_size=[7, 7, 7], stride=[1, 1, 1], dilation=[1, 1, 1])
+              (pooling_bn): MinkowskiBatchNorm(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (reg_fc_layers): Sequential(
+            (0): Linear(in_features=128, out_features=256, bias=False)
+            (1): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (2): ReLU()
+            (3): Dropout(p=0.3, inplace=False)
+            (4): Linear(in_features=256, out_features=256, bias=False)
+            (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (6): ReLU()
+          )
+          (reg_pred_layer): Linear(in_features=256, out_features=6, bias=True)
+        )
+      )
+    )
+    (skip_propagation): SkipPropagation(
+      (stn): STN_Group(
+        (grouper): QueryAndGroup()
+        (stn3d): STN3d(
+          (conv1): Conv1d(3, 64, kernel_size=(1,), stride=(1,))
+          (conv2): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+          (conv3): Conv1d(128, 256, kernel_size=(1,), stride=(1,))
+          (mp1): MaxPool1d(kernel_size=1024, stride=1024, padding=0, dilation=1, ceil_mode=False)
+          (fc1): Linear(in_features=256, out_features=128, bias=True)
+          (fc2): Linear(in_features=128, out_features=64, bias=True)
+          (fc3): Linear(in_features=64, out_features=12, bias=True)
+          (relu): ReLU(inplace=True)
+          (bn1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (bn2): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (bn3): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (bn4): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (bn5): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (encoder): ResnetPointnet(
+        (fc_pos): Linear(in_features=134, out_features=1024, bias=True)
+        (block_0): ResnetBlockFC(
+          (fc_0): Linear(in_features=1024, out_features=512, bias=True)
+          (fc_1): Linear(in_features=512, out_features=512, bias=True)
+          (actvn): ReLU(inplace=True)
+          (shortcut): Linear(in_features=1024, out_features=512, bias=False)
+        )
+        (block_1): ResnetBlockFC(
+          (fc_0): Linear(in_features=1024, out_features=512, bias=True)
+          (fc_1): Linear(in_features=512, out_features=512, bias=True)
+          (actvn): ReLU(inplace=True)
+          (shortcut): Linear(in_features=1024, out_features=512, bias=False)
+        )
+        (block_2): ResnetBlockFC(
+          (fc_0): Linear(in_features=1024, out_features=512, bias=True)
+          (fc_1): Linear(in_features=512, out_features=512, bias=True)
+          (actvn): ReLU(inplace=True)
+          (shortcut): Linear(in_features=1024, out_features=512, bias=False)
+        )
+        (block_3): ResnetBlockFC(
+          (fc_0): Linear(in_features=1024, out_features=512, bias=True)
+          (fc_1): Linear(in_features=512, out_features=512, bias=True)
+          (actvn): ReLU(inplace=True)
+          (shortcut): Linear(in_features=1024, out_features=512, bias=False)
+        )
+        (block_4): ResnetBlockFC(
+          (fc_0): Linear(in_features=1024, out_features=512, bias=True)
+          (fc_1): Linear(in_features=512, out_features=512, bias=True)
+          (actvn): ReLU(inplace=True)
+          (shortcut): Linear(in_features=1024, out_features=512, bias=False)
+        )
+        (fc_c): Linear(in_features=512, out_features=512, bias=True)
+        (actvn): ReLU()
+      )
+      (point_seg): PointSeg(
+        (feat): PointNetEncoder(
+          (stn): STN3d(
+            (conv1): Conv1d(6, 64, kernel_size=(1,), stride=(1,))
+            (conv2): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+            (conv3): Conv1d(128, 1024, kernel_size=(1,), stride=(1,))
+            (fc1): Linear(in_features=1024, out_features=512, bias=True)
+            (fc2): Linear(in_features=512, out_features=256, bias=True)
+            (fc3): Linear(in_features=256, out_features=9, bias=True)
+            (relu): ReLU()
+            (bn1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (bn2): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (bn3): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (bn4): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (bn5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+          (conv1): Conv1d(6, 64, kernel_size=(1,), stride=(1,))
+          (conv2): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+          (conv3): Conv1d(128, 1024, kernel_size=(1,), stride=(1,))
+          (bn1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (bn2): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (bn3): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (fstn): STNkd(
+            (conv1): Conv1d(64, 64, kernel_size=(1,), stride=(1,))
+            (conv2): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+            (conv3): Conv1d(128, 1024, kernel_size=(1,), stride=(1,))
+            (fc1): Linear(in_features=1024, out_features=512, bias=True)
+            (fc2): Linear(in_features=512, out_features=256, bias=True)
+            (fc3): Linear(in_features=256, out_features=4096, bias=True)
+            (relu): ReLU()
+            (bn1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (bn2): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (bn3): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (bn4): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (bn5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+        )
+        (conv1): Conv1d(1088, 512, kernel_size=(1,), stride=(1,))
+        (conv2): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+        (conv3): Conv1d(256, 128, kernel_size=(1,), stride=(1,))
+        (conv4): Conv1d(128, 2, kernel_size=(1,), stride=(1,))
+        (bn1): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (bn2): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (bn3): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+      (mask_loss_func): get_loss()
+    )
+    (completion): ONet(
+      (encoder_latent): Encoder_Latent(
+        (fc_pos): Linear(in_features=3, out_features=128, bias=True)
+        (fc_c): Linear(in_features=512, out_features=128, bias=True)
+        (fc_0): Linear(in_features=1, out_features=128, bias=True)
+        (fc_1): Linear(in_features=128, out_features=128, bias=True)
+        (fc_2): Linear(in_features=256, out_features=128, bias=True)
+        (fc_3): Linear(in_features=256, out_features=128, bias=True)
+        (fc_mean): Linear(in_features=128, out_features=32, bias=True)
+        (fc_logstd): Linear(in_features=128, out_features=32, bias=True)
+      )
+      (decoder): DecoderCBatchNorm(
+        (fc_z): Linear(in_features=32, out_features=256, bias=True)
+        (fc_p): Conv1d(3, 256, kernel_size=(1,), stride=(1,))
+        (blocks): ModuleList(
+          (0): CResnetBlockConv1d(
+            (bn_0): CBatchNorm1d(
+              (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+            )
+            (bn_1): CBatchNorm1d(
+              (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+            )
+            (fc_0): Conv1d(256, 256, kernel_size=(1,), stride=(1,))
+            (fc_1): Conv1d(256, 256, kernel_size=(1,), stride=(1,))
+            (actvn): ReLU(inplace=True)
+          )
+          (1): CResnetBlockConv1d(
+            (bn_0): CBatchNorm1d(
+              (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+            )
+            (bn_1): CBatchNorm1d(
+              (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+            )
+            (fc_0): Conv1d(256, 256, kernel_size=(1,), stride=(1,))
+            (fc_1): Conv1d(256, 256, kernel_size=(1,), stride=(1,))
+            (actvn): ReLU(inplace=True)
+          )
+          (2): CResnetBlockConv1d(
+            (bn_0): CBatchNorm1d(
+              (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+            )
+            (bn_1): CBatchNorm1d(
+              (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+            )
+            (fc_0): Conv1d(256, 256, kernel_size=(1,), stride=(1,))
+            (fc_1): Conv1d(256, 256, kernel_size=(1,), stride=(1,))
+            (actvn): ReLU(inplace=True)
+          )
+          (3): CResnetBlockConv1d(
+            (bn_0): CBatchNorm1d(
+              (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+            )
+            (bn_1): CBatchNorm1d(
+              (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+            )
+            (fc_0): Conv1d(256, 256, kernel_size=(1,), stride=(1,))
+            (fc_1): Conv1d(256, 256, kernel_size=(1,), stride=(1,))
+            (actvn): ReLU(inplace=True)
+          )
+          (4): CResnetBlockConv1d(
+            (bn_0): CBatchNorm1d(
+              (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+            )
+            (bn_1): CBatchNorm1d(
+              (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+              (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+            )
+            (fc_0): Conv1d(256, 256, kernel_size=(1,), stride=(1,))
+            (fc_1): Conv1d(256, 256, kernel_size=(1,), stride=(1,))
+            (actvn): ReLU(inplace=True)
+          )
+        )
+        (bn): CBatchNorm1d(
+          (conv_gamma): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+          (conv_beta): Conv1d(512, 256, kernel_size=(1,), stride=(1,))
+          (bn): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+        )
+        (fc_out): Conv1d(256, 1, kernel_size=(1,), stride=(1,))
+        (actvn): ReLU(inplace=True)
+      )
+    )
+  )
+)
+2023-06-05 18:54:58,554 - demo - INFO - Begin to train from scratch.
+2023-06-05 18:54:58,554 - demo - INFO - Loading data.

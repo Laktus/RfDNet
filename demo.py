@@ -32,6 +32,8 @@ def load_demo_data(cfg, device):
     if not use_color:
         point_cloud = point_cloud[:, 0:3]  # do not use color for now
     else:
+        if not point_cloud[:,3:]:
+          point_cloud = np.pad(point_cloud, ((0,0), (0,3)), mode='constant')
         point_cloud = point_cloud[:, 0:6]
         point_cloud[:, 3:] = (point_cloud[:, 3:] - MEAN_COLOR_RGB) / 256.0
 
@@ -40,6 +42,8 @@ def load_demo_data(cfg, device):
         height = point_cloud[:, 2] - floor_height
         point_cloud = np.concatenate([point_cloud, np.expand_dims(height, 1)], 1)
 
+    # CAGroup3D requires a bs_id that we don't have here. We always assume bs_id = 0
+    point_cloud = np.pad(point_cloud, ((0,0),(1,0)), mode='constant')
     point_cloud, choices = pc_util.random_sampling(point_cloud, num_points, return_choices=True)
     data = collate_fn([{'point_clouds': point_cloud.astype(np.float32)}])
 
@@ -206,12 +210,18 @@ def generate(cfg, net, data, post_processing):
         end_points = {}
         
         batch_dict = {
-          'points': data['point_clouds'],
+          'points': data['point_clouds'][0],
           'cur_epoch': 240,
-          'batch_size': 8
+          'batch_size': 1
         }
 
-        result = net.detection(batch_dict)
+        end_points = net.detection(batch_dict)
+
+        print("END POINTS")
+        print(end_points)
+
+        print("DATA")
+        print(data)
 
         eval_dict, parsed_predictions = parse_predictions(end_points, data, cfg.eval_config)
 

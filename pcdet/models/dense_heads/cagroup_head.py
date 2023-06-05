@@ -36,7 +36,10 @@ class CAGroup3DHead(nn.Module):
         loss_cls = cfg.get('loss_cls', None)
         loss_sem = cfg.get('loss_sem', None)
         loss_offset = cfg.get('loss_offset', None)
-        nms_config = cfg.get('nms_config', None)
+        nms_config = cfg.get('nms_config',
+                                    dict(SCORE_THR=0.01,
+                                         NMS_PRE=1000,
+                                         IOU_THR=0.5,)) 
         self.voxel_size = voxel_size
         self.yaw_parametrization = yaw_parametrization
         self.cls_kernel = cls_kernel
@@ -574,8 +577,8 @@ class CAGroup3DHead(nn.Module):
                 sem_scores = cls_score.sigmoid()
             max_scores, _ = scores.max(dim=1)
 
-            if len(scores) > self.nms_cfg.NMS_PRE > 0:
-                _, ids = max_scores.topk(self.nms_cfg.NMS_PRE)
+            if len(scores) > self.nms_cfg['NMS_PRE'] > 0:
+                _, ids = max_scores.topk(self.nms_cfg['NMS_PRE'])
                 bbox_pred = bbox_pred[ids]
                 scores = scores[ids]
                 point = point[ids]
@@ -593,13 +596,13 @@ class CAGroup3DHead(nn.Module):
         sem_scores = torch.cat(mlvl_sem_scores) if self.use_sem_score else None
         if self.use_sem_score:
             # if use class_agnostic nms when training
-            if self.training and self.nms_cfg.get('SCORE_THR_AGNOSTIC', None) is not None:
+            if self.training and self.nms_cfg['SCORE_THR_AGNOSTIC'] is not None:
                 bboxes, scores, labels, sem_scores = self.class_agnostic_nms(bboxes, scores, img_meta, sem_scores=sem_scores)
             else:
                 bboxes, scores, labels, sem_scores = self._nms(bboxes, scores, img_meta, sem_scores=sem_scores)
             return bboxes, scores, labels, sem_scores
         else:
-            if self.training and self.nms_cfg.get('SCORE_THR_AGNOSTIC', None) is not None:
+            if self.training and self.nms_cfg['SCORE_THR_AGNOSTIC'] is not None:
                 bboxes, scores, labels = self.class_agnostic_nms(bboxes, scores, img_meta)
             else:
                 bboxes, scores, labels = self._nms(bboxes, scores, img_meta)
@@ -732,7 +735,7 @@ class CAGroup3DHead(nn.Module):
         nms_bboxes, nms_scores, nms_labels = [], [], []
         nms_sem_scores = []
         for i in range(n_classes):
-            ids = scores[:, i] > self.nms_cfg.SCORE_THR
+            ids = scores[:, i] > self.nms_cfg['SCORE_THR']
             if not ids.any():
                 continue
 

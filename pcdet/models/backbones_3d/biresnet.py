@@ -172,6 +172,34 @@ class DAPPM(nn.Module):
                                     ME.MinkowskiConvolution(
                                         inplanes, outplanes, kernel_size=1, bias=False, dimension=dimension),
                                     )
+    def forward(self, x):
+        x_list = []
+        x_coords = x.C.float()
+
+        x_list.append(self.scale0(x))
+
+        x_scale1_tensor = self.scale1(x).features_at_coordinates(x_coords)
+        x_scale1 = ME.SparseTensor(features=x_scale1_tensor,
+            coordinate_manager=x.coordinate_manager, coordinate_map_key=x.coordinate_map_key)
+        x_list.append(self.process1(x_scale1+x_list[0]))
+
+        x_scale2_tensor = self.scale2(x).features_at_coordinates(x_coords)
+        x_scale2 = ME.SparseTensor(features=x_scale2_tensor,
+            coordinate_manager=x.coordinate_manager, coordinate_map_key=x.coordinate_map_key)
+        x_list.append(self.process2(x_scale2+x_list[1]))
+
+        x_scale3_tensor = self.scale3(x).features_at_coordinates(x_coords)
+        x_scale3 = ME.SparseTensor(features=x_scale3_tensor,
+            coordinate_manager=x.coordinate_manager, coordinate_map_key=x.coordinate_map_key)
+        x_list.append(self.process3(x_scale3+x_list[2]))
+
+        x_scale4_tensor = self.scale4(x).features_at_coordinates(x_coords)
+        x_scale4 = ME.SparseTensor(features=x_scale4_tensor,
+            coordinate_manager=x.coordinate_manager, coordinate_map_key=x.coordinate_map_key)
+        x_list.append(self.process4(x_scale4+x_list[3]))
+
+        out = self.compression(ME.cat(*x_list)) + self.shortcut(x)
+        return out
 
 class segmenthead(nn.Module):
 

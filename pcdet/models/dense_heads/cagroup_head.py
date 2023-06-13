@@ -37,7 +37,7 @@ class CAGroup3DHead(nn.Module):
         loss_sem = cfg.get('loss_sem', None)
         loss_offset = cfg.get('loss_offset', None)
         nms_config = cfg.get('nms_config',
-                                    dict(SCORE_THR=0.01,
+                                    dict(SCORE_THR=0.00001,
                                          NMS_PRE=1000,
                                          IOU_THR=0.5,)) 
         self.voxel_size = voxel_size
@@ -269,6 +269,7 @@ class CAGroup3DHead(nn.Module):
         all_prediction = zip(*outs)
         centernesses, bbox_preds, cls_scores, voxel_points = list(all_prediction)
         out_dict = dict()
+
         out_dict['one_stage_results'] = [centernesses, bbox_preds, cls_scores, voxel_points], semantic_scores, voxel_offsets
         if not return_middle_feature:
             out_dict['middle_feature_list'] = None 
@@ -301,6 +302,10 @@ class CAGroup3DHead(nn.Module):
                     gt_labels_3d.append(gt_labels_b)
                 out_dict['gt_bboxes_3d'] = gt_bboxes_3d
                 out_dict['gt_labels_3d'] = gt_labels_3d
+        
+        print("IN CAGROUP_HEAD")
+        print(out_dict)
+        print(out_dict.keys())
         
         return out_dict
 
@@ -753,7 +758,8 @@ class CAGroup3DHead(nn.Module):
             correct_class_bboxes = class_bboxes.clone()
             if yaw_flag:
                 correct_class_bboxes[..., 6] *= -1
-            nms_ids, _ = nms_function(correct_class_bboxes, class_scores, self.nms_cfg.IOU_THR)
+            
+            nms_ids, _ = nms_function(correct_class_bboxes, class_scores, self.nms_cfg['IOU_THR'])
             nms_bboxes.append(class_bboxes[nms_ids])
             nms_scores.append(class_scores[nms_ids])
             nms_labels.append(bboxes.new_full(class_scores[nms_ids].shape, i, dtype=torch.long))

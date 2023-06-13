@@ -54,7 +54,7 @@ class CAGroup3D(nn.Module):
         assert cur_epoch is not None
         self.dense_head.semantic_threshold = max(self.semantic_value - int(cur_epoch) * self.semantic_iter_value, self.semantic_min_threshold)
         # normalize point features
-        #batch_dict['points'][:, -3:] = batch_dict['points'][:, -3:] / 255.
+        # batch_dict['points'][:, -3:] = batch_dict['points'][:, -3:] / 255.
         sp_tensor = self.voxelization(batch_dict['points'])
         batch_dict['sp_tensor'] = sp_tensor
         

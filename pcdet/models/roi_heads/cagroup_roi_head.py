@@ -109,7 +109,7 @@ class CAGroup3DRoIHead(nn.Module):
         cls_fc = [256,256]
         reg_fc = [256,256]
         dp_ratio = 0.3
-        test_score_thr = 0.01
+        test_score_thr = 0.0000001
         test_iou_thr = 0.5
         roi_per_image = cfg['roi_per_image']
         roi_fg_ratio = cfg['roi_fg_ratio']
@@ -402,6 +402,9 @@ class CAGroup3DRoIHead(nn.Module):
             pred_dict['batch_cls_preds'].append(results[i][2])
         
         input_dict.update(pred_dict)
+
+        print("IN CA_GROUP_ROI_HEAD")
+        print(input_dict)
 
         return input_dict
     

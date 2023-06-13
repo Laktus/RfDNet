@@ -386,10 +386,14 @@ class BiResNet(nn.Module):
         x_ = self.out(x_) # 2
         # x_ = self.final_layer(x_)
 
+        
+        print("IN BIRESNET")
         if self.augment: 
             x_extra = self.seghead_extra(temp)
             out_dict['sp_tensor'] = [x_extra, x_, layers]
+            print(out_dict['sp_tensor'])
             return out_dict
         else:
             out_dict['sp_tensor'] = x_
+            print(out_dict['sp_tensor'])
             return out_dict

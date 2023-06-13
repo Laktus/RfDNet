@@ -11,6 +11,7 @@ from utils import pc_util
 from models.iscnet.dataloader import collate_fn
 import torch
 from net_utils.ap_helper import parse_predictions
+from net_utils.ap_helper import parse_predictions_meta
 from net_utils.libs import flip_axis_to_depth, extract_pc_in_box3d, flip_axis_to_camera
 from net_utils.box_util import get_3d_box
 from torch import optim
@@ -20,6 +21,10 @@ import vtk
 from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
 from utils.scannet.visualization.vis_for_demo import Vis_base
 
+
+def random_pad(vec, pad_width, *_, **__):
+    vec[:pad_width[0]] = np.random.randint(0, 256, size=pad_width[0])
+    vec[vec.size-pad_width[1]:] = np.random.randint(0, 256, size=pad_width[1])
 
 def load_demo_data(cfg, device):
     point_cloud = trimesh.load(cfg.config['demo_path']).vertices
@@ -33,7 +38,10 @@ def load_demo_data(cfg, device):
         point_cloud = point_cloud[:, 0:3]  # do not use color for now
     else:
         if not point_cloud[:,3:]:
-          point_cloud = np.pad(point_cloud, ((0,0), (0,3)), mode='constant')
+          point_cloud = np.pad(point_cloud, ((0,0), (0,3)), mode=random_pad)
+        
+        print(point_cloud)
+
         point_cloud = point_cloud[:, 0:6]
         point_cloud[:, 3:] = (point_cloud[:, 3:] - MEAN_COLOR_RGB) / 256.0
 
@@ -215,15 +223,20 @@ def generate(cfg, net, data, post_processing):
           'batch_size': 1
         }
 
+        print("POINT_CLOUDS")
+        print(data['point_clouds'].shape)
+
         end_points = net.detection(batch_dict)
 
-        print("END POINTS")
-        print(end_points)
+        print("END_POINTS")
 
-        print("DATA")
-        print(data)
+        print("END_POINTS_0")
+        print(end_points[0])
+        
+        print("END_POINTS_1")
+        print(end_points[1])
 
-        eval_dict, parsed_predictions = parse_predictions(end_points, data, cfg.eval_config)
+        eval_dict, parsed_predictions = parse_predictions_meta(end_points, data, cfg.eval_config)
 
         '''For Completion'''
         # use 3D NMS to generate sample ids.

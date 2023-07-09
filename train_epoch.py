@@ -4,7 +4,6 @@
 
 from net_utils.utils import LossRecorder, LogBoard
 from time import time
-import csv
 log_board = LogBoard()
 
 def train_epoch(cfg, epoch, trainer, dataloaders):

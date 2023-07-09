@@ -7,6 +7,7 @@ import yaml
 import logging
 from datetime import datetime
 
+
 def update_recursive(dict1, dict2):
     ''' Update two config dictionaries recursively.
 

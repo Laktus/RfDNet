@@ -57,44 +57,20 @@ def get_proposal_id(cfg, end_points, data, prefix="", mode='random', batch_sampl
     batch_size = 1
     device = end_points[f'{prefix}center'].device
     NUM_PROPOSALS = end_points[f'{prefix}center'].size(1)
-    print("=" * 100)
-    print(NUM_PROPOSALS)
-    print(end_points[f'{prefix}center'].shape)
-    print(end_points[f'{prefix}objectness_scores'].shape)
-    print("=" * 100)
     proposal_id_list = []
 
     if mode == 'objectness' or batch_sample_ids is not None:
         objectness_probs = torch.sigmoid(end_points[f'{prefix}objectness_scores'])[:, :, 0]
 
     for batch_id in range(batch_size):
-        print("DUMP_CONF_THRESH")
-        print((objectness_probs[batch_id] > DUMP_CONF_THRESH).shape)
-
         proposal_to_gt_box_w_cls = torch.arange(0, NUM_PROPOSALS).unsqueeze(-1).to(device).long()
-        print(proposal_to_gt_box_w_cls)
-
-        print("BATCH_SAMPLE_IDS")
-        print(batch_sample_ids)
-        print(batch_sample_ids[batch_id])
-        print("FINISH BATCH SAMPLE IDS")
-        
-        print("LOG OBJECTNESS_PROBS")
-        print(objectness_probs)
 
         sample_ids = (objectness_probs[batch_id] > DUMP_CONF_THRESH).cpu().numpy()*batch_sample_ids[batch_id]
-        print("SAMPLE_IDS")
-        print(sample_ids)
         sample_ids = sample_ids.astype(np.bool)
 
         proposal_to_gt_box_w_cls = proposal_to_gt_box_w_cls[sample_ids].long()
-        print(proposal_to_gt_box_w_cls)
-        print("PROPOSAL_TO_GT_BOX_W_CLS")
-        print(proposal_to_gt_box_w_cls.shape)
         proposal_id_list.append(proposal_to_gt_box_w_cls.unsqueeze(0))
     
-    print("TORCH CAT PROPOSAL ID LIST")
-    print(torch.cat(proposal_id_list, dim=0).shape)
     return torch.cat(proposal_id_list, dim=0)
 
 def chamfer_dist(obj_points, obj_points_masks, pc_in_box, pc_in_box_masks, centroid_params, orientation_params):
@@ -232,7 +208,7 @@ def generate(cfg, net, data, post_processing):
         eval_dict, parsed_predictions = parse_predictions(end_points, data, cfg.eval_config, prefix=prefix)
 
         '''For Completion'''
-        # use 3D NMS to generate sample ids.)
+        # use 3D NMS to generate sample ids.
         proposal_features = end_points['features_for_skip_propagation']
         batch_sample_ids = eval_dict['pred_mask']
 
@@ -248,10 +224,6 @@ def generate(cfg, net, data, post_processing):
         else:
             # gather proposal features
             gather_ids = BATCH_PROPOSAL_IDs[..., 0].unsqueeze(1).repeat(1, 128, 1).long().to(device)
-            print("GATHER_IDS")
-            print("=" * 100)
-            print(gather_ids.shape)
-            print("=" * 100)
             proposal_features = torch.gather(proposal_features, 2, gather_ids)
 
             # gather proposal centers
@@ -268,12 +240,6 @@ def generate(cfg, net, data, post_processing):
             heading_angles = cfg.eval_config['dataset_config'].class2angle_cuda(pred_heading_class,
                                                                                 pred_heading_residual)
             heading_angles = torch.gather(heading_angles, 1, BATCH_PROPOSAL_IDs[..., 0])
-
-            print("=" * 100)
-            print(pred_centers.shape)
-            print(heading_angles.shape)
-            print(proposal_features.shape)
-            print("=" * 100)
 
             object_input_features = net.skip_propagation.generate(pred_centers, heading_angles, proposal_features,
                                                                   data['point_clouds']) #Passed data point_clouds with features to skip connection 

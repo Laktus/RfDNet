@@ -9,8 +9,6 @@ from external.pyTorchChamferDistance.chamfer_distance import ChamferDistance
 from models.registers import LOSSES
 from net_utils.nn_distance import nn_distance, huber_loss
 
-import csv
-
 chamfer_func = ChamferDistance()
 
 

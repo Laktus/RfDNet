@@ -31,9 +31,9 @@ data:
 
   groupfree:
     num_decoder_layers: 6
-    query_points_generator_loss_coef: 0.8
-    obj_loss_coef: 0.1
-    box_loss_coef: 0.1
+    query_points_generator_loss_coef: 1
+    obj_loss_coef: 0.5
+    box_loss_coef: 1
     sem_cls_loss_coef: 0.1
     query_points_obj_topk: 4
     center_loss_type: smoothl1
@@ -69,8 +69,8 @@ generation:
   use_sampling: False
   refinement_step: 0
   simplify_nfaces: Null
-  dump_threshold: 0.01
-  dump_results: False
+  dump_threshold: 0.5
+  dump_results: True
 demo:
   phase: 'completion'
 log:

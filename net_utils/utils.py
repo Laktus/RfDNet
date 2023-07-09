@@ -113,7 +113,6 @@ class CheckpointIO(object):
             if not os.path.exists(weight_path):
                 self.cfg.log_string('Warning: finetune failed: the weight path %s is invalid. Begin to train from scratch.' % (weight_path))
             else:
-                print(weight_path)
                 self.load(weight_path, 'net')
                 self.cfg.log_string('Weights for finetuning loaded.')
 

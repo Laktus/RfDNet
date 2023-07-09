@@ -301,11 +301,6 @@ class ISCNet(BaseNetwork):
         obj_points_after = torch.bmm(obj_points, axis_rectified) + centroid_params.unsqueeze(-2)
         dist1, dist2 = chamfer_func(obj_points_after, pc_in_box)
         return torch.mean(dist2 * pc_in_box_masks)*1e3
-
-    def convert_scores_to_probabilities(self, scores):
-      exp_scores = np.exp(scores)
-      probabilities = exp_scores / np.sum(exp_scores)
-      return probabilities
     
     def forward(self, data, export_shape=False):
         '''

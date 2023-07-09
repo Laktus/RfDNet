@@ -9,6 +9,8 @@ from external.pyTorchChamferDistance.chamfer_distance import ChamferDistance
 from models.registers import LOSSES
 from net_utils.nn_distance import nn_distance, huber_loss
 
+import csv
+
 chamfer_func = ChamferDistance()
 
 
@@ -201,6 +203,36 @@ def compute_box_and_sem_cls_loss(est_data, gt_data, meta_data, config):
 
     return center_loss, heading_class_loss, heading_residual_normalized_loss, size_class_loss, size_residual_normalized_loss, sem_cls_loss
 
+'''
+This is a custom wrapper for the GroupFreeLoss module. We register the module using RfDNets @MODULES#register_module framework. 
+We pass the needed hyperparameters and custom configurations through RfDNets configuration files.
+'''
+@LOSSES.register_module
+class GroupFreeLoss(BaseLoss):
+    def __init__(self, weight=1):
+        '''initialize loss module'''
+        from external.groupfree3d.models.loss_helper import get_loss
+        super().__init__(weight)
+        self.criterion = get_loss
+    
+    def __call__(self, end_points, dataset_config, cfg):
+        end_points['angle_diffs'] = []
+        loss, end_points = self.criterion(
+          end_points, dataset_config,
+          num_decoder_layers=cfg['num_decoder_layers'],
+          query_points_generator_loss_coef=cfg['query_points_generator_loss_coef'],
+          obj_loss_coef=cfg['obj_loss_coef'],
+          box_loss_coef=cfg['box_loss_coef'],
+          sem_cls_loss_coef=cfg['sem_cls_loss_coef'],
+          query_points_obj_topk=cfg['query_points_obj_topk'],
+          center_loss_type=cfg['center_loss_type'],
+          center_delta=cfg['center_delta'],
+        )
+
+        l = {'total': loss}
+        l.update({k:v for k, v in end_points.items() if 'loss' in k})
+
+        return l
 
 @LOSSES.register_module
 class DetectionLoss(BaseLoss):

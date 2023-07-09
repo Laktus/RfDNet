@@ -5,19 +5,18 @@
 
 import torch.utils.data
 from torch.utils.data import DataLoader
-from net_utils.libs import random_sampling_by_instance, rotz, flip_axis_to_camera
+from net_utils.libs import rotz
 import numpy as np
 from models.datasets import ScanNet
 import os
-from net_utils.box_util import get_3d_box
 from utils import pc_util
-from utils.scannet.tools import get_box_corners
 from net_utils.transforms import SubsamplePoints
 from external import binvox_rw
+from configs.path_config import ScanNet_OBJ_CLASS_IDS as OBJ_CLASS_IDS
 import pickle
 
 default_collate = torch.utils.data.dataloader.default_collate
-MAX_NUM_OBJ = 64
+MAX_NUM_OBJ = 128
 MEAN_COLOR_RGB = np.array([121.87661, 109.73591, 95.61673])
 
 class ISCNet_ScanNet(ScanNet):
@@ -68,6 +67,8 @@ class ISCNet_ScanNet(ScanNet):
         point_cloud = scan_data['mesh_vertices']
         point_votes = scan_data['point_votes']
         point_instance_labels = scan_data['instance_labels']
+        # Added semantic labels. GroupFree uses them for calculating the loss.
+        semantic_labels = scan_data['semantic_labels']
 
         if not self.use_color:
             point_cloud = point_cloud[:, 0:3]  # do not use color for now
@@ -123,12 +124,14 @@ class ISCNet_ScanNet(ScanNet):
         angle_classes = np.zeros((MAX_NUM_OBJ,))
         angle_residuals = np.zeros((MAX_NUM_OBJ,))
         object_instance_labels = np.zeros((MAX_NUM_OBJ, ))
+        size_gts = np.zeros((MAX_NUM_OBJ, 3))
 
         # NOTE: set size class as semantic class. Consider use size2class.
         size_classes[0:boxes3D.shape[0]] = class_ind
         size_residuals[0:boxes3D.shape[0], :] = boxes3D[:, 3:6] - self.dataset_config.mean_size_arr[class_ind, :]
         target_bboxes_mask[0:boxes3D.shape[0]] = 1
         target_bboxes[0:boxes3D.shape[0], :] = boxes3D[:,0:6]
+        size_gts[0:boxes3D.shape[0], :] = target_bboxes[0:boxes3D.shape[0], 3:6]
         object_instance_labels[0:boxes3D.shape[0]] = object_instance_ids
 
         obj_angle_class, obj_angle_residuals = self.dataset_config.angle2class(boxes3D[:, 6])
@@ -139,6 +142,30 @@ class ISCNet_ScanNet(ScanNet):
         point_votes_mask = point_votes[choices,0]
         point_votes = point_votes[choices,1:]
         point_instance_labels = point_instance_labels[choices]
+        semantic_labels = semantic_labels[choices]
+
+        gt_centers = target_bboxes[:, 0:3]
+        gt_centers[boxes3D.shape[0]:, :] += 1000.0  # padding centers with a large number
+        # compute GT Centers *AFTER* augmentation
+        # generate gt centers
+        # Note: since there's no map between bbox instance labels and
+        # pc instance_labels (it had been filtered 
+        # in the data preparation step) we'll compute the instance bbox
+        # from the points sharing the same instance label.
+        point_obj_mask = np.zeros(self.num_points)
+        point_instance_label = np.zeros(self.num_points) - 1
+
+        for i_instance in np.unique(point_instance_labels):
+            # find all points belong to that instance
+            ind = np.where(point_instance_labels == i_instance)[0]
+            
+            # find the semantic label
+            if semantic_labels[ind[0]] in OBJ_CLASS_IDS:
+                x = point_cloud[ind, :3]
+                center = 0.5 * (x.min(0) + x.max(0))
+                ilabel = np.argmin(((center - gt_centers) ** 2).sum(-1))
+                point_instance_label[ind] = ilabel
+                point_obj_mask[ind] = 1.0
 
         '''For Object Detection'''
         ret_dict = {}
@@ -156,6 +183,21 @@ class ISCNet_ScanNet(ScanNet):
         ret_dict['vote_label_mask'] = point_votes_mask.astype(np.int64)
         ret_dict['scan_idx'] = np.array(idx).astype(np.int64)
 
+        # Custom
+        ret_dict['size_gts'] = size_gts.astype(np.float32)
+        ret_dict['point_obj_mask'] = point_obj_mask.astype(np.int64)
+        ret_dict['point_instance_label'] = point_instance_label.astype(np.int64)
+
+        # Parse sin and cos values from the ground truth rotation, adapting it as custom part in our GroupFree loss
+        sin_angle = np.zeros((MAX_NUM_OBJ,))
+        cos_angle = np.zeros((MAX_NUM_OBJ,))
+
+        sin_angle[0:boxes3D.shape[0]] = np.sin(boxes3D[:, 6])
+        cos_angle[0:boxes3D.shape[0]] = np.cos(boxes3D[:, 6])
+
+        ret_dict['box_sin'] = sin_angle.astype(np.float32)
+        ret_dict['box_cos'] = cos_angle.astype(np.float32)
+ 
         '''For Object Completion'''
         if self.phase == 'completion':
             object_points = np.zeros((MAX_NUM_OBJ, np.sum(self.n_points_object), 3))

@@ -1,0 +1,3 @@
+[submodule "external/groupfree3d"]
+	path = external/groupfree3d
+	url = https://github.com/Laktus/Group-Free-3D

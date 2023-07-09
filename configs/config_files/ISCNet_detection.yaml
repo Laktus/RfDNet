@@ -1,7 +1,7 @@
 method: ISCNet
 resume: False
-finetune: False
-weight: []
+finetune: True
+weight: ['out/pretrained_models/group_free_infected.pth']
 seed: 10
 device:
   use_gpu: True
@@ -28,16 +28,21 @@ data:
   completion_limit_in_train: 10
   use_cls_for_completion: False
   skip_propagate: True
+
+  groupfree:
+    num_decoder_layers: 6
+    query_points_generator_loss_coef: 1
+    obj_loss_coef: 0.5
+    box_loss_coef: 1
+    sem_cls_loss_coef: 0.1
+    query_points_obj_topk: 4
+    center_loss_type: smoothl1
+    center_delta: 1.0
+    num_heading_bin: 12
 model:
-  backbone:
-    method: Pointnet2Backbone
-    loss: Null
-  voting:
-    method: VotingModule
-    loss: Null
   detection:
-    method: ProposalModule
-    loss: DetectionLoss
+    method: GroupFree
+    loss: GroupFreeLoss
   skip_propagation:
     method: SkipPropagation
     loss: Null
@@ -52,11 +57,11 @@ optimizer:
   eps: 1e-08
   weight_decay: 0
 scheduler:
-  patience: 20
+  patience: 5
   factor: 0.1
   threshold: 0.01
 bnscheduler:
-  bn_decay_step: 20
+  bn_decay_step: 5
   bn_decay_rate: 0.5
   bn_momentum_init: 0.5
   bn_momentum_max: 0.001
@@ -67,7 +72,7 @@ train:
   batch_size: 8
 val:
   phase: 'detection'
-  batch_size: 8
+  batch_size: 4
   use_cls_nms: True
   use_3d_nms: True
   ap_iou_thresholds: [0.25, 0.5]

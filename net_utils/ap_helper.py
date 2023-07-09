@@ -127,8 +127,12 @@ class APCalculator(object):
         self.pred_map_cls = {}  # {scan_id: [(classname, bbox, score)]}
         self.scan_cnt = 0
 
+def sigmoid(x):
+    ''' Numpy function for softmax'''
+    s = 1 / (1 + np.exp(-x))
+    return s
 
-def parse_predictions(est_data, gt_data, config_dict):
+def parse_predictions(est_data, gt_data, config_dict, prefix=""):
     """ Parse predictions to OBB parameters and suppress overlapping boxes
 
     Args:
@@ -147,22 +151,22 @@ def parse_predictions(est_data, gt_data, config_dict):
     """
     eval_dict = {}
 
-    pred_center = est_data['center']  # B,num_proposal,3
-    pred_heading_class = torch.argmax(est_data['heading_scores'], -1)  # B,num_proposal
-    heading_residuals = est_data['heading_residuals_normalized'] * (
+    pred_center = est_data[f'{prefix}center']  # B,num_proposal,3
+    pred_heading_class = torch.argmax(est_data[f'{prefix}heading_scores'], -1)  # B,num_proposal
+    heading_residuals = est_data[f'{prefix}heading_residuals_normalized'] * (
                 np.pi / config_dict['dataset_config'].num_heading_bin)  # Bxnum_proposalxnum_heading_bin
     pred_heading_residual = torch.gather(heading_residuals, 2,
                                          pred_heading_class.unsqueeze(-1))  # B,num_proposal,1
     pred_heading_residual.squeeze_(2)
-    pred_size_class = torch.argmax(est_data['size_scores'], -1)  # B,num_proposal
-    size_residuals = est_data['size_residuals_normalized'] * torch.from_numpy(
+    pred_size_class = torch.argmax(est_data[f'{prefix}size_scores'], -1)  # B,num_proposal
+    size_residuals = est_data[f'{prefix}size_residuals_normalized'] * torch.from_numpy(
         config_dict['dataset_config'].mean_size_arr.astype(np.float32)).cuda().unsqueeze(0).unsqueeze(0)
     pred_size_residual = torch.gather(size_residuals, 2,
                                       pred_size_class.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, 1,
                                                                                          3))  # B,num_proposal,1,3
     pred_size_residual.squeeze_(2)
-    pred_sem_cls = torch.argmax(est_data['sem_cls_scores'], -1)  # B,num_proposal
-    sem_cls_probs = softmax(est_data['sem_cls_scores'].detach().cpu().numpy())  # B,num_proposal,10
+    pred_sem_cls = torch.argmax(est_data[f'{prefix}sem_cls_scores'], -1)  # B,num_proposal
+    sem_cls_probs = softmax(est_data[f'{prefix}sem_cls_scores'].detach().cpu().numpy())  # B,num_proposal,10
     pred_sem_cls_prob = np.max(sem_cls_probs, -1)  # B,num_proposal
 
     num_proposal = pred_center.shape[1]
@@ -175,6 +179,12 @@ def parse_predictions(est_data, gt_data, config_dict):
         for j in range(num_proposal):
             heading_angle = config_dict['dataset_config'].class2angle( \
                 pred_heading_class[i, j].detach().cpu().numpy(), pred_heading_residual[i, j].detach().cpu().numpy())
+            
+            # Uncomment to use sin and cos groundtruth instead
+            """heading_angle = torch.atan2(est_data[f'{prefix}box_sin_pred'].detach().cpu(), est_data[f'{prefix}box_cos_pred'].detach().cpu()).squeeze(-1)[i, j]
+            #heading_angle = np.mod(heading_angle + np.pi, 2 * np.pi) - np.pi
+            print(heading_angle)"""
+            
             box_size = config_dict['dataset_config'].class2size( \
                 int(pred_size_class[i, j].detach().cpu().numpy()), pred_size_residual[i, j].detach().cpu().numpy())
             corners_3d_upright_camera = get_3d_box(box_size, -heading_angle, pred_center_upright_camera[i, j, :])
@@ -197,8 +207,8 @@ def parse_predictions(est_data, gt_data, config_dict):
                     nonempty_box_mask[i, j] = 0
         # -------------------------------------
 
-    obj_logits = est_data['objectness_scores'].detach().cpu().numpy()
-    obj_prob = softmax(obj_logits)[:, :, 1]  # (B,K)
+    obj_logits = est_data[f'{prefix}objectness_scores'].detach().cpu().numpy()
+    obj_prob = sigmoid(obj_logits)[:, :, 0]  # (B,K)
     if not config_dict['use_3d_nms']:
         # ---------- NMS input: pred_with_prob in (B,K,7) -----------
         pred_mask = np.zeros((bsize, K), dtype=np.uint8)

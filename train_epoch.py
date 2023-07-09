@@ -4,6 +4,7 @@
 
 from net_utils.utils import LossRecorder, LogBoard
 from time import time
+import csv
 log_board = LogBoard()
 
 def train_epoch(cfg, epoch, trainer, dataloaders):
@@ -16,6 +17,9 @@ def train_epoch(cfg, epoch, trainer, dataloaders):
     :return:
     '''
     for phase in ['train', 'val']:
+        # remove once cuda memory leaks fixed
+        if phase == 'val':
+            break
         dataloader = dataloaders[phase]
         batch_size = cfg.config[phase]['batch_size']
         loss_recorder = LossRecorder(batch_size)
@@ -28,9 +32,9 @@ def train_epoch(cfg, epoch, trainer, dataloaders):
         cfg.log_string('-'*100)
         for iter, data in enumerate(dataloader):
             if phase == 'train':
-                loss = trainer.train_step(data)
+              loss = trainer.train_step(data)
             else:
-                loss = trainer.eval_step(data)
+              loss = trainer.eval_step(data)
 
             # visualize intermediate results.
             if ((iter + 1) % cfg.config['log']['vis_step']) == 0:

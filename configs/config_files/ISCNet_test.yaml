@@ -1,7 +1,7 @@
 method: ISCNet
 resume: False
 finetune: True
-weight: ['out/pretrained_models/pretrained_weight.pth']
+weight: ['out/pretrained_models/pretrained_weight.pth', 'out/pretrained_models/model_last.pth']
 seed: 10
 device:
   use_gpu: True
@@ -28,16 +28,21 @@ data:
   completion_limit_in_train: 10
   use_cls_for_completion: False
   skip_propagate: True
+
+  groupfree:
+    num_decoder_layers: 6
+    query_points_generator_loss_coef: 0.8
+    obj_loss_coef: 0.1
+    box_loss_coef: 0.1
+    sem_cls_loss_coef: 0.1
+    query_points_obj_topk: 4
+    center_loss_type: smoothl1
+    center_delta: 1.0
+    num_heading_bin: 12
 model:
-  backbone:
-    method: Pointnet2Backbone
-    loss: Null
-  voting:
-    method: VotingModule
-    loss: Null
   detection:
-    method: ProposalModule
-    loss: DetectionLoss
+    method: GroupFree
+    loss: GroupFreeLoss
   skip_propagation:
     method: SkipPropagation
     loss: Null
@@ -55,8 +60,8 @@ test:
   nms_iou: 0.25
   use_old_type_nms: False
   per_class_proposal: True
-  conf_thresh: 0.05
-  evaluate_mesh_mAP: False
+  conf_thresh: 0.5
+  evaluate_mesh_mAP: True
 generation:
   generate_mesh: True
   resolution_0: 32
@@ -64,8 +69,8 @@ generation:
   use_sampling: False
   refinement_step: 0
   simplify_nfaces: Null
-  dump_threshold: 0.5
-  dump_results: True
+  dump_threshold: 0.01
+  dump_results: False
 demo:
   phase: 'completion'
 log:

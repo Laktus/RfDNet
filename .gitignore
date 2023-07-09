@@ -1,0 +1,10 @@
+*__pycache__*
+.vscode/
+datasets/
+
+# Ignore generated/manually added visualization helper files
+visualization_helper/demo_results
+visualization_helper/bbox.pkl
+visualization_helper/full_scan.npz
+visualization_helper/loss_plot.png
+visualization_helper/trainloss.txt

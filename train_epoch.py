@@ -16,9 +16,6 @@ def train_epoch(cfg, epoch, trainer, dataloaders):
     :return:
     '''
     for phase in ['train', 'val']:
-        # remove once cuda memory leaks fixed
-        if phase == 'val':
-            break
         dataloader = dataloaders[phase]
         batch_size = cfg.config[phase]['batch_size']
         loss_recorder = LossRecorder(batch_size)

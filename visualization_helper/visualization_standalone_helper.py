@@ -248,7 +248,7 @@ class Vis_base(object):
         '''draw scene points'''
         point_size = 4
 
-        if label_type != 'custom_boxes':
+        if label_type and label_type != 'custom_boxes':
             boxes3D, point_cloud, point_instance_labels, semantic_labels = fetch_custom_data() 
 
             # padding centers with a large number

@@ -1,6 +1,11 @@
-*__pycache__*
+**/__pycache__/
 .vscode/
 datasets/
+build/
+condacolab_install.log
+out/iscnet/
+runs/
+external/
 
 # Ignore generated/manually added visualization helper files
 visualization_helper/demo_results

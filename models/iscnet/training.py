@@ -18,7 +18,14 @@ class Trainer(BaseTrainer):
         :param data (dict): data dictionary
         :return:
         '''
-        loss = self.compute_loss(data)
+        data = self.to_device(data)
+
+        '''network forwarding'''
+        with torch.no_grad():
+            est_data = self.net(data)
+        
+        '''compute losses'''
+        loss = self.net.module.loss(est_data, data)
         loss['total'] = loss['total'].item()
         return loss
 

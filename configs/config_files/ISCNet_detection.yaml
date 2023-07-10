@@ -72,7 +72,7 @@ train:
   batch_size: 8
 val:
   phase: 'detection'
-  batch_size: 4
+  batch_size: 8
   use_cls_nms: True
   use_3d_nms: True
   ap_iou_thresholds: [0.25, 0.5]

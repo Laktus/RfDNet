@@ -1,7 +1,7 @@
 method: ISCNet
-resume: False
-finetune: True
-weight: ['out/pretrained_models/group_free_infected.pth']
+resume: True
+finetune: False
+weight: []
 seed: 10
 device:
   use_gpu: True
@@ -31,13 +31,15 @@ data:
 
   groupfree:
     num_decoder_layers: 6
-    query_points_generator_loss_coef: 1
-    obj_loss_coef: 0.5
+    query_points_generator_loss_coef: 0.8
+    obj_loss_coef: 0.1
     box_loss_coef: 1
     sem_cls_loss_coef: 0.1
     query_points_obj_topk: 4
     center_loss_type: smoothl1
-    center_delta: 1.0
+    center_delta: 0.04
+    size_delta: 0.111111111111
+    heading_delta: 0.04
     num_heading_bin: 12
 model:
   detection:
@@ -52,10 +54,10 @@ model:
     weight: 1
 optimizer:
   method: Adam
-  lr: 1e-3
+  lr: 0.0006
   betas: [0.9, 0.999]
   eps: 1e-08
-  weight_decay: 0
+  weight_decay: 0.0005
 scheduler:
   patience: 5
   factor: 0.1

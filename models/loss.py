@@ -225,6 +225,8 @@ class GroupFreeLoss(BaseLoss):
           query_points_obj_topk=cfg['query_points_obj_topk'],
           center_loss_type=cfg['center_loss_type'],
           center_delta=cfg['center_delta'],
+          size_delta=cfg['size_delta'],
+          heading_delta=cfg['heading_delta']
         )
 
         l = {'total': loss}

@@ -91,7 +91,7 @@ class SkipPropagation(nn.Module):
         '''
 
         xyz, features = self._break_up_pc(input_point_cloud)
-
+        
         features = torch.cat([features, point_instance_labels.unsqueeze(1)], dim=1)
         xyz, features = self.stn(xyz, features, box_xyz, box_orientations)
 

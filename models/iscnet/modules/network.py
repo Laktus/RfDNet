@@ -321,12 +321,15 @@ class ISCNet(BaseNetwork):
             # Get sample ids for training (For limited GPU RAM)
             BATCH_PROPOSAL_IDs = self.get_proposal_id(end_points, data, 'objectness', prefix=prefix)
 
+
+
             # Skip propagate point clouds to box centers.
             if not self.cfg.config['data']['skip_propagate']:
                 gather_ids = BATCH_PROPOSAL_IDs[...,0].unsqueeze(1).repeat(1, 128, 1).long().to(device)
                 object_input_features = torch.gather(proposal_features, 2, gather_ids)
                 mask_loss = torch.tensor(0.).to(device)
             else:
+                proposal_features = end_points['features_for_skip_propagation']
                 # gather proposal features
                 gather_ids = BATCH_PROPOSAL_IDs[...,0].unsqueeze(1).repeat(1, 128, 1).long().to(device)
                 proposal_features = torch.gather(proposal_features, 2, gather_ids)
@@ -346,7 +349,7 @@ class ISCNet(BaseNetwork):
                 # gather instance labels
                 proposal_instance_labels = torch.gather(data['object_instance_labels'], 1, BATCH_PROPOSAL_IDs[...,1])
 
-                object_input_features, mask_loss = self.skip_propagation(pred_centers, heading_angles, proposal_features, inputs['point_clouds'], data['point_instance_labels'], proposal_instance_labels)
+                object_input_features, mask_loss = self.skip_propagation(pred_centers, heading_angles, proposal_features, data['point_clouds'], data['point_instance_labels'], proposal_instance_labels)
 
             # Prepare input-output pairs for shape completion
             # proposal_to_gt_box_w_cls_list (B x N_Limit x 4): (bool_mask, proposal_id, gt_box_id, cls_id)
@@ -385,7 +388,7 @@ class ISCNet(BaseNetwork):
         proposal_id_list = []
 
         if mode == 'objectness' or batch_sample_ids is not None:
-            objectness_probs = torch.softmax(end_points[f'{prefix}objectness_scores'], dim=2)[..., 1]
+            objectness_probs = torch.sigmoid(end_points[f'{prefix}objectness_scores'])[..., 0]
 
         for batch_id in range(batch_size):
             box_mask = torch.nonzero(data['box_label_mask'][batch_id])
@@ -396,7 +399,7 @@ class ISCNet(BaseNetwork):
             proposal_to_gt_box_w_cls = torch.cat(
                 [torch.arange(0, NUM_PROPOSALS).unsqueeze(-1).to(device).long(), object_assignment.unsqueeze(-1)],
                 dim=-1)
-            gt_classes = data[f'{prefix}sem_cls_label'][batch_id][proposal_to_gt_box_w_cls[:, 1]]
+            gt_classes = data[f'sem_cls_label'][batch_id][proposal_to_gt_box_w_cls[:, 1]]
             proposal_to_gt_box_w_cls = torch.cat([proposal_to_gt_box_w_cls, gt_classes.long().unsqueeze(-1)], dim=-1)
 
             if batch_sample_ids is None:

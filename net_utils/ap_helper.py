@@ -448,9 +448,9 @@ def batch_load_pred_data(idx, proposal_ids, batch_id, pred_corners, sem_cls_prob
     dimension = int(max((obj_points.max(0) - obj_points.min(0))) / voxel_size)
     dimension = max(dimension, 2)
     # internal voxels
-    voxel_data_internal = voxelize_mesh(mesh_data, dimension=dimension, wireframe=True, dilated_carving=True)
+    voxel_data_internal = None # voxelize_mesh(mesh_data, dimension=dimension, wireframe=True, dilated_carving=True, use_offscreen_pbuffer=True)
     # surface voxels
-    voxel_data_surface = voxelize_mesh(mesh_data, exact=True, dimension=dimension)
+    voxel_data_surface = None # voxelize_mesh(mesh_data, exact=True, dimension=dimension, use_offscreen_pbuffer=True)
 
     return (ii, pred_corners[batch_id, j], sem_cls_probs[batch_id, j, ii] * obj_prob[batch_id, j],
             (voxel_data_internal, voxel_data_surface))
@@ -482,7 +482,7 @@ def batch_load_gt_data(j, meshes, gt_corners, sem_cls_label, batch_id, voxel_siz
     dimension = int(max((obj_points.max(0) - obj_points.min(0))) / voxel_size)
     dimension = max(dimension, 2)
     # internal voxels
-    voxel_data_internal = voxelize_mesh(mesh_data, dimension=dimension, wireframe=True, dilated_carving=True)
+    voxel_data_internal = None # voxelize_mesh(mesh_data, dimension=dimension, wireframe=True, dilated_carving=True, use_offscreen_pbuffer=True)
     # surface voxels
-    voxel_data_surface = voxelize_mesh(mesh_data, exact=True, dimension=dimension)
+    voxel_data_surface = None # voxelize_mesh(mesh_data, exact=True, dimension=dimension, use_offscreen_pbuffer=True)
     return (sem_cls_label[batch_id, j], gt_corners[batch_id, j], (voxel_data_internal, voxel_data_surface))

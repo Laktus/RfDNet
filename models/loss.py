@@ -230,7 +230,7 @@ class GroupFreeLoss(BaseLoss):
         )
 
         l = {'total': loss}
-        l.update({k:v for k, v in end_points.items() if 'loss' in k})
+        #l.update({k:v for k, v in end_points.items() if 'loss' in k})
 
         return l
 
